@@ -57,9 +57,10 @@ async function refresh() {
 async function refreshDetail() {
   const id = state.selected;
   if (!id) return;
-  const [account, { operations }] = await Promise.all([
+  const [account, { operations }, events] = await Promise.all([
     request('/' + encodeURIComponent(id)),
-    request('/' + encodeURIComponent(id) + '/operations')
+    request('/' + encodeURIComponent(id) + '/operations'),
+    request('/' + encodeURIComponent(id) + '/events')
   ]);
   if (state.selected !== id) return;
   $('#detail').hidden = false;
@@ -84,6 +85,38 @@ async function refreshDetail() {
     history.append(line);
   }
   if (!operations.length) history.textContent = 'Aucune opération.';
+  renderEvents(events);
+}
+
+function renderEvents(events) {
+  const container = $('#events');
+  container.replaceChildren();
+  for (const event of events) {
+    const line = document.createElement('div');
+    line.className = 'operation';
+    const label = document.createElement('span');
+    label.textContent = describeEvent(event);
+    const date = document.createElement('small');
+    date.textContent = '#' + event.sequence + ' · ' + new Date(event.occurredAt).toLocaleString('fr-MA');
+    label.append(date);
+    const type = document.createElement('strong');
+    type.className = 'credit';
+    type.textContent = event.type;
+    line.append(label, type);
+    container.append(line);
+  }
+}
+
+function describeEvent(event) {
+  const payload = event.payload || {};
+  switch (event.type) {
+    case 'Created': return `Ouverture du compte (${payload.currency})`;
+    case 'Activated': return 'Activation du compte';
+    case 'Credited': return `Crédit de ${money(payload.amount, payload.currency)}`;
+    case 'Debited': return `Débit de ${money(payload.amount, payload.currency)}`;
+    case 'StatusChanged': return `Statut changé en ${payload.status}`;
+    default: return event.type;
+  }
 }
 
 async function select(id) {
