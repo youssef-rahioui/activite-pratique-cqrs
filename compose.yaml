@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bank_cqrs
+      POSTGRES_USER: bank
+      POSTGRES_PASSWORD: bank
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bank -d bank_cqrs"]
+      interval: 5s
+      retries: 10
+  axonserver:
+    image: axoniq/axonserver:4.6.2
+    ports:
+      - "8024:8024"
+      - "8124:8124"
+    environment:
+      AXONIQ_AXONSERVER_STANDALONE: "true"
+    volumes:
+      - axon_data:/data
+      - axon_events:/eventdata
+      - axon_config:/config
+
+volumes:
+  postgres_data:
+  axon_data:
+  axon_events:
+  axon_config:
