@@ -35,6 +35,9 @@ class BankExternalTest {
         var created = http.postForEntity(root, new CreateRequest(new BigDecimal("50.00"), "MAD"), Map.class);
         assertThat(created.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         String id = (String) created.getBody().get("accountId");
+        Map[] eventHistory = http.getForObject(root + "/" + id + "/events", Map[].class);
+        assertThat(eventHistory).extracting(event -> event.get("type"))
+                .containsExactly("Created", "Activated");
 
         await().atMost(Duration.ofSeconds(30)).untilAsserted(() ->
                 assertThat(http.getForObject(root + "/" + id, Map.class).get("status")).isEqualTo("ACTIVE"));

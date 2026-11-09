@@ -39,6 +39,9 @@ class BankApiTest {
         assertThat(creation.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         String id = (String) creation.getBody().get("accountId");
         assertThat(id).isNotBlank();
+        Map[] createdEvents = http.getForObject(root + "/" + id + "/events", Map[].class);
+        assertThat(createdEvents).extracting(event -> event.get("type"))
+                .containsExactly("Created", "Activated");
 
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             Map account = http.getForObject(root + "/" + id, Map.class);
@@ -60,6 +63,8 @@ class BankApiTest {
         assertThat(rejected.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat((java.util.List<?>) http.getForObject(root + "/" + id + "/operations", Map.class)
                 .get("operations")).hasSize(1);
+        assertThat(http.getForObject(root + "/" + id + "/events", Map[].class))
+                .extracting(event -> event.get("type")).containsExactly("Created", "Activated", "Credited");
 
         ResponseEntity<Map> missing = http.exchange(root + "/missing", HttpMethod.GET, HttpEntity.EMPTY, Map.class);
         assertThat(missing.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
