@@ -7,4 +7,5 @@ public final class AccountQuery {
     public record ById(String accountId) {}
     public record Operations(String accountId) {}
     public record Watch(String accountId) {}
+    public record StateAt(String accountId, Long sequence) {}
 }

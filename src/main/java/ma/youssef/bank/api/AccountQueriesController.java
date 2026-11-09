@@ -6,6 +6,7 @@ import ma.youssef.bank.query.AccountQuery;
 import ma.youssef.bank.query.AccountSummary;
 import ma.youssef.bank.query.OperationList;
 import ma.youssef.bank.query.OperationSummary;
+import ma.youssef.bank.query.StateSnapshot;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.axonframework.queryhandling.SubscriptionQueryResult;
@@ -14,6 +15,7 @@ import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
@@ -39,6 +41,12 @@ public class AccountQueriesController {
     @GetMapping("/{id}/operations")
     public CompletableFuture<OperationList> operations(@PathVariable String id) {
         return queries.query(new AccountQuery.Operations(id), ResponseTypes.instanceOf(OperationList.class));
+    }
+
+    @GetMapping("/{id}/state")
+    public CompletableFuture<StateSnapshot> stateAt(@PathVariable String id,
+                                                    @RequestParam(required = false) Long sequence) {
+        return queries.query(new AccountQuery.StateAt(id, sequence), ResponseTypes.instanceOf(StateSnapshot.class));
     }
 
     @GetMapping(value = "/{id}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

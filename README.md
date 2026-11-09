@@ -42,6 +42,8 @@ Un compte créé est aussitôt activé. Les montants utilisent `BigDecimal` ; un
 | `GET` | `/api/accounts/{id}` | Solde, devise, statut, date de création |
 | `GET` | `/api/accounts/{id}/operations` | `{"operations":[...]}` |
 | `GET` | `/api/accounts/{id}/events` | Journal d’événements de l’agrégat, avec séquence, date et contenu |
+| `GET` | `/api/accounts/{id}/state` | Solde, devise, statut et séquence d’événement courants |
+| `GET` | `/api/accounts/{id}/state?sequence=N` | État reconstruit en rejouant les événements jusqu’à la séquence `N` |
 | `GET` | `/api/accounts/{id}/stream` | Flux SSE (`event: operation`) : historique puis nouveaux mouvements |
 
 Exemple de création :

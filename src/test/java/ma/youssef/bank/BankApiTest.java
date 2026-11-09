@@ -66,6 +66,15 @@ class BankApiTest {
         assertThat(http.getForObject(root + "/" + id + "/events", Map[].class))
                 .extracting(event -> event.get("type")).containsExactly("Created", "Activated", "Credited");
 
+        Map latest = http.getForObject(root + "/" + id + "/state", Map.class);
+        assertThat(new BigDecimal(latest.get("balance").toString())).isEqualByComparingTo("125.00");
+        assertThat(latest.get("sequence")).isEqualTo(2);
+
+        Map atCreation = http.getForObject(root + "/" + id + "/state?sequence=1", Map.class);
+        assertThat(new BigDecimal(atCreation.get("balance").toString())).isEqualByComparingTo("100.00");
+        assertThat(atCreation.get("status")).isEqualTo("ACTIVE");
+        assertThat(atCreation.get("sequence")).isEqualTo(1);
+
         ResponseEntity<Map> missing = http.exchange(root + "/missing", HttpMethod.GET, HttpEntity.EMPTY, Map.class);
         assertThat(missing.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
